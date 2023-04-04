@@ -68,17 +68,18 @@ def process_image ():
     # 将人物部分的图片和颜色值相加，得到改变颜色后的图片
     lego_face_color = cv2.add (lego_face, color)
 
-    # 将人物相片缩放到合适的大小，和LEGO图片匹配
+        # 将人物相片缩放到合适的大小，和LEGO图片匹配
     photo = cv2.resize (photo, (231, 231))
 
-    # 将改变颜色后的图片粘贴到相片上，覆盖原来的颜色
+        # 将改变颜色后的图片粘贴到相片上，覆盖原来的颜色
     x = 0 # 左上角横坐标
-y = 0 # 左上角纵坐标
-w = 231 # 宽度
-h = 231 # 高度
-photo [y:y+h, x:x+w] = lego_face_color
+    y = 0 # 左上角纵坐标
+    w = 231 # 宽度
+    h = 231 # 高度
+    photo [y:y+h, x:x+w] = lego_face_color
 
-# 将结果图片转换为RGB格式，以便显示在Tkinter上
-result = cv2.cvtColor (photo, cv2.COLOR_BGR2RGB)
+    # 将结果图片转换为RGB格式，以便显示在Tkinter上
+    result = cv2.cvtColor (photo, cv2.COLOR_BGR2RGB)
 
-# 显示结果图片在Label上，并更新进度条和状态栏
+    # 显示结果图片在Label上，并更新进度条和状态栏
+    result_image = ImageTk.PhotoImage (Image.fromarray (result))

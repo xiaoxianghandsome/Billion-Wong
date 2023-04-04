@@ -1,0 +1,84 @@
+# 导入OpenCV库
+import cv2
+
+# 导入Tkinter库
+from tkinter import *
+from tkinter import filedialog
+from tkinter import messagebox
+from tkinter import ttk
+
+# 创建一个主窗口
+root = Tk ()
+root.title ("Image Color Changer")
+root.geometry ("800x600")
+
+# 定义一些全局变量
+lego = None # LEGO图片
+photo = None # 人物相片
+result = None # 结果图片
+color = (255, 0, 0) # 颜色值
+
+# 定义一些函数
+
+def select_lego ():
+    # 选择LEGO图片的函数
+    global lego
+    filename = filedialog.askopenfilename (title="Select LEGO Image", filetypes=[("Image Files", "*.jpg;*.png")])
+    if filename:
+        lego = cv2.imread (filename)
+        messagebox.showinfo ("Success", "LEGO Image Selected")
+
+def select_photo ():
+    # 选择人物相片的函数
+    global photo
+    filename = filedialog.askopenfilename (title="Select Photo Image", filetypes=[("Image Files", "*.jpg;*.png")])
+    if filename:
+        photo = cv2.imread (filename)
+        messagebox.showinfo ("Success", "Photo Image Selected")
+
+def change_color ():
+    # 改变颜色值的函数
+    global color
+    r = red_scale.get () # 获取红色滑块的值
+    g = green_scale.get () # 获取绿色滑块的值
+    b = blue_scale.get () # 获取蓝色滑块的值
+    color = (b, g, r) # 设置颜色值为BGR格式
+    color_label.config (bg= '#%02x%02x%02x' % color) # 显示颜色值对应的背景色
+
+def process_image ():
+    # 处理图片的函数
+    global lego, photo, result, color
+
+    # 检查是否选择了LEGO图片和人物相片
+    if lego is None or photo is None:
+        messagebox.showerror ("Error", "Please Select Images First")
+        return
+
+    # 将LEGO图片转换为HSV颜色空间
+    lego_hsv = cv2.cvtColor (lego, cv2.COLOR_BGR2HSV)
+
+    # 创建一个掩码，选出图片中的人物部分
+    lower_range = np.array ( [0, 0, 0])
+    upper_range = np.array ( [10, 255, 255])
+    mask = cv2.inRange (lego_hsv, lower_range, upper_range)
+
+    # 将原图片和掩码进行按位与操作，得到只包含人物部分的图片
+    lego_face = cv2.bitwise_and (lego, lego, mask=mask)
+
+    # 将人物部分的图片和颜色值相加，得到改变颜色后的图片
+    lego_face_color = cv2.add (lego_face, color)
+
+    # 将人物相片缩放到合适的大小，和LEGO图片匹配
+    photo = cv2.resize (photo, (231, 231))
+
+    # 将改变颜色后的图片粘贴到相片上，覆盖原来的颜色
+    x = 0 # 左上角横坐标
+y = 0 # 左上角纵坐标
+w = 231 # 宽度
+h = 231 # 高度
+photo [y:y+h, x:x+w] = lego_face_color
+
+# 将结果图片转换为RGB格式，以便显示在Tkinter上
+result = cv2.cvtColor (photo, cv2.COLOR_BGR2RGB)
+
+# 显示结果图片在Label上，并更新进度条和状态栏

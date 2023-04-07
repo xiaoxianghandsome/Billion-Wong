@@ -1,0 +1,84 @@
+import tkinter as tk
+from tkinter import filedialog
+from PIL import Image, ImageTk
+
+def getLegoColors(imgPath):
+    #input(imgPath)
+    # 打开图片
+    img = Image.open(imgPath)
+    
+    img = img.quantize(colors=256)
+    img = img.convert('RGB')
+    
+    # 获取图片中所有颜色的列表
+    colors = {}
+    for i in range(img.width):
+        for j in range(img.height):
+            clr = img.getpixel((i, j))
+            #input(clr)
+            if clr not in colors.keys():
+                colors[clr] = 0
+    
+
+    # 定义乐高颜色
+    #lego_colors = [color[1] for color in colors]
+    lego_colors = list(colors.keys())
+    return lego_colors
+
+def select_image():
+    # 选择图像文件
+    file_path = filedialog.askopenfilename(filetypes=[('Image Files', '*.jpg;*.jpeg;*.png;*.bmp')])
+    if not file_path:
+        return
+
+    # 打开图像文件
+    image = Image.open(file_path)
+
+    # 调整图像大小以匹配乐高砖块
+    smallImage = image.resize((32, 32), Image.ANTIALIAS)
+    
+    image = smallImage.resize((320, 320), Image.NEAREST)
+
+    # 定义乐高颜色
+    lego_colors = [
+        (0, 0, 0), # 黑色
+        (255, 255, 255), # 白色
+        (255, 0, 0), # 红色
+        (0, 255, 0), # 绿色
+        (0, 0, 255), # 蓝色
+        # ... 添加更多颜色
+    ]
+    lego_colors = getLegoColors('D:/test/p2.jpg')
+    #input(lego_colors)
+
+    # 将图像转换为乐高颜色
+    lego_image = Image.new('RGB', image.size)
+    pixels = lego_image.load()
+    #input(image.size)
+    for x in range(image.width):
+        for y in range(image.height):
+            pixel_color = image.getpixel((x, y))
+            closest_color = min(lego_colors, key = lambda color: sum((pixel_color[i] - color[i]) ** 2 for i in range(3)))
+            pixels[x, y] = closest_color
+            #input(closest_color)
+
+    # 显示结果
+    #lego_image = image
+    lego_photo = ImageTk.PhotoImage(lego_image)
+    result_label.config(image=lego_photo)
+    result_label.image = lego_photo
+
+# 创建主窗口
+root = tk.Tk()
+root.title('Legoizer')
+
+# 添加选择图像按钮
+select_button = tk.Button(root, text='Select Image', command=select_image)
+select_button.pack()
+
+# 添加结果标签
+result_label = tk.Label(root)
+result_label.pack()
+
+# 运行主循环
+root.mainloop()
